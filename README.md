@@ -232,23 +232,23 @@ Puis entrez les informations comme ceci :
 
 ![](images/3.png)
 
-Nom du compte : Celui que vous voulez, il sera afficher que sur MicroSIP
+**Nom du compte** : Celui que vous voulez, il sera afficher que sur MicroSIP
 
-Serveur SIP : l'adresse IP de votre machine (ou le serveur VoIP est installé)
+**Serveur SIP** : l'adresse IP de votre machine (ou le serveur VoIP est installé)
 
-Nom d'utilisateur: l'utilisateur que vous voulez connecter
+**Nom d'utilisateur**: l'utilisateur que vous voulez connecter
 
-Domaine : l'adresse IP de votre machine (ou le serveur VoIP est installé)
+**Domaine** : l'adresse IP de votre machine (ou le serveur VoIP est installé)
 
-Login : l'utilisateur que vous voulez connecter
+**Login** : l'utilisateur que vous voulez connecter
 
-Mot de passe : celui de votre utilisateur
+**Mot de passe** : celui de votre utilisateur
 
-Nom à afficher : celui que vous voulez, vous n'êtes pas obliger d'en mettre un
+**Nom à afficher** : celui que vous voulez, vous n'êtes pas obliger d'en mettre un
 
-N° de la boîte vocale : le numéro de téléphone de l'utilisateur (paramétrer dans le `pjsip.conf`
+**N° de la boîte vocale** : le numéro de téléphone de l'utilisateur (paramétrer dans le `pjsip.conf`
 
-Transport : choisir TLS pour une sécurisation en TLS
+**Transport** : choisir TLS pour une sécurisation en TLS
 
 
 Finalement on peut voir en bas de l'interface MicroSIP qu'on est bien connecté à alice : 
