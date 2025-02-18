@@ -215,13 +215,44 @@ Ce qui nous donne ce résultat dans notre exemple :
 
 Après ces étapes, vous devriez pourvoir vous connecter via Microsip ou PortSIP uc à vos utilisateurs en TLS. 
 
+
 ## Configuration sur MicroSIP 
 
 Lancez MicroSIP sur votre PC 
 
 Allez dans les paramètres : 
 
-
 ![](images/1.png)
 
+Clickez sur "ajouter un compte" :
+
+![](images/2.png)
+
+Puis entrez les informations comme ceci : 
+
+![](images/3.png)
+
+Nom du compte : Celui que vous voulez, il sera afficher que sur MicroSIP
+
+Serveur SIP : l'adresse IP de votre machine (ou le serveur VoIP est installé)
+
+Nom d'utilisateur: l'utilisateur que vous voulez connecter
+
+Domaine : l'adresse IP de votre machine (ou le serveur VoIP est installé)
+
+Login : l'utilisateur que vous voulez connecter
+
+Mot de passe : celui de votre utilisateur
+
+Nom à afficher : celui que vous voulez, vous n'êtes pas obliger d'en mettre un
+
+N° de la boîte vocale : le numéro de téléphone de l'utilisateur (paramétrer dans le `pjsip.conf`
+
+Transport : choisir TLS pour une sécurisation en TLS
+
+
+Finalement on peut voir en bas de l'interface MicroSIP qu'on est bien connecté à alice : 
+
+
+![](images/4.png)
 
