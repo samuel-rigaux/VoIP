@@ -98,9 +98,9 @@ tail -n +2 "$CSV_FILE" | while IFS=, read -r NAME NUMBER; do
     
     echo "📞 Génération de l'appel pour $NAME ($NUMBER)..."
 
-    cat <<EOF > "$CALL_FILE"
-
 # Récupération des données du fichier CSV
+
+    cat <<EOF > "$CALL_FILE"
 
 Channel: PJSIP/$NUMBER
 CallerID: "Prospection Automatique" <$CALLER_ID>
