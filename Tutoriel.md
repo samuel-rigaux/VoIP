@@ -1,4 +1,4 @@
-# DOCUMENTATION
+# TUTORIEL D'INSTALLATION
 
 Pour l’installation d’asterisk, j’ai suivi ce [tutoriel](https://doc.ubuntu-fr.org/asterisk).
 
