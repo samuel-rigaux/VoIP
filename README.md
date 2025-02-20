@@ -82,11 +82,13 @@ CSV_FILE="contact.csv"
 CALLS_DIR="/var/spool/asterisk/outgoing/"
 CALLER_ID="9000"
 
+# Vérification de l'existence du fichier CSV
 if [[ ! -f "$CSV_FILE" ]]; then
     echo "❌ Erreur : le fichier $CSV_FILE n'existe pas."
     exit 1
 fi
 
+# Lecture du fichier CSV
 tail -n +2 "$CSV_FILE" | while IFS=, read -r NAME NUMBER; do
     if [[ -z "$NAME" || -z "$NUMBER" ]]; then
                continue
@@ -97,6 +99,7 @@ tail -n +2 "$CSV_FILE" | while IFS=, read -r NAME NUMBER; do
     echo "📞 Génération de l'appel pour $NAME ($NUMBER)..."
 
     cat <<EOF > "$CALL_FILE"
+# Récupération des données du fichier CSV
 Channel: PJSIP/$NUMBER
 CallerID: "Prospection Automatique" <$CALLER_ID>
 MaxRetries: 2
@@ -107,6 +110,7 @@ Extension: s
 Priority: 1
 EOF
 
+# Changement des autorisations
     chmod 777 "$CALL_FILE"
     mv "$CALL_FILE" "$CALLS_DIR/"
     echo "✅ Appel généré pour $NAME ($NUMBER)"
