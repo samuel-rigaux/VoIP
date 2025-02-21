@@ -78,45 +78,54 @@ Nous avons mis en place un script Bash permettant de générer automatiquement d
 ```bash
 #!/bin/bash
 
-CSV_FILE="contact.csv"
+CSV_FILE="contacts.csv"
 CALLS_DIR="/var/spool/asterisk/outgoing/"
-CALLER_ID="9000"
+CALLER_ID="LaPlateforme_"
 
-# Vérification de l'existence du fichier CSV
+# Vérifier si le fichier CSV existe
 if [[ ! -f "$CSV_FILE" ]]; then
     echo "❌ Erreur : le fichier $CSV_FILE n'existe pas."
     exit 1
 fi
 
-# Lecture du fichier CSV
-tail -n +2 "$CSV_FILE" | while IFS=, read -r NAME NUMBER; do
-    if [[ -z "$NAME" || -z "$NUMBER" ]]; then
-               continue
-    fi
+# Sélectionner un contact au hasard dans le fichier CSV (sans l'entête)
+SELECTED_CONTACT=$(tail -n +2 "$CSV_FILE" | shuf -n 1)
 
-    CALL_FILE="/tmp/call_$NUMBER.call"
-    
-    echo "📞 Génération de l'appel pour $NAME ($NUMBER)..."
+# Extraire le nom et le numéro
+IFS=',' read -r NAME NUMBER <<< "$SELECTED_CONTACT"
 
-# Récupération des données du fichier CSV
+# Vérifier que les champs ne sont pas vides
+if [[ -z "$NAME" || -z "$NUMBER" ]]; then
+    echo "⚠️ Contact invalide, sélection d'un autre..."
+    exit 1
+fi
 
-    cat <<EOF > "$CALL_FILE"
+CALL_FILE="/tmp/call_$NUMBER.call"
 
+echo "📞 Génération de l'appel pour $NAME ($NUMBER)..."
+
+cat <<EOF > "$CALL_FILE"
 Channel: PJSIP/$NUMBER
-CallerID: "Prospection Automatique" <$CALLER_ID>
+CallerID: "LaPlateforme_" <$CALLER_ID>
 MaxRetries: 2
 RetryTime: 60
 WaitTime: 30
-Context: auto_calls
+Context: outgoing-calls
 Extension: s
 Priority: 1
 EOF
 
-# Changement des autorisations
-    chmod 777 "$CALL_FILE"
-    mv "$CALL_FILE" "$CALLS_DIR/"
-    echo "✅ Appel généré pour $NAME ($NUMBER)"
-done
+# Vérifier que le fichier a été créé
+if [[ ! -f "$CALL_FILE" ]]; then
+    echo "❌ Erreur : Impossible de créer le fichier d'appel pour $NAME ($NUMBER)."
+    exit 1
+fi
+
+# Déplacer le fichier avec les bonnes permissions
+chmod 777 "$CALL_FILE"
+mv "$CALL_FILE" "$CALLS_DIR/"
+
+echo "✅ Appel généré pour $NAME ($NUMBER)"
 
 ```
 
