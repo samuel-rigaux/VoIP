@@ -1,57 +1,148 @@
-# Rapport sur Asterisk pour un serveur VoIP
+# 📞 Installation et Configuration d'un Serveur VoIP avec Asterisk
 
-## Introduction et contextualisation
+Ce document fournit un guide détaillé pour l’installation, la configuration et la sécurisation d’un serveur VoIP basé sur Asterisk.
 
-Dans un monde où les communications téléphoniques sont omniprésentes, les systèmes de téléphonie sur IP (VoIP) offrent des solutions flexibles et économiques pour les entreprises et les particuliers. Asterisk, une plateforme open-source, permet de créer un serveur VoIP performant et personnalisable. Ce rapport présente l'installation, la configuration et l'utilisation d'Asterisk pour mettre en place un système téléphonique complet, y compris un serveur interactif et un automate d'appel.
+---
 
-## Présentation fonctionnelle
+## 🔹 Introduction
 
-Asterisk est un logiciel libre permettant la mise en place d'un serveur VoIP. Il permet de gérer des appels, d'automatiser les réponses et d'assurer une communication sécurisée via le protocole TLS. Nous avons suivi les étapes suivantes pour l'installation et la configuration :
+Asterisk est un logiciel open-source permettant de mettre en place un serveur VoIP. Ce tutoriel vous guidera à travers l'installation et la configuration d'Asterisk sous Linux.
 
-1.  Installation des paquets nécessaires.
-2.  Téléchargement et compilation d'Asterisk.
-3.  Configuration des utilisateurs dans `pjsip.conf`.
-4.  Sécurisation des appels par TLS.
-5.  Mise en place d'un serveur vocal interactif (IVR).
-6.  Automatisation des appels via un script shell.
+---
 
-## Avantages et inconvénients
+## 🚀 Installation d'Asterisk
 
-### Avantages
+### 1. Installation des dépendances
+```sh
+sudo apt update && sudo apt upgrade -y
+sudo apt install build-essential libxml2-dev libncurses5-dev \
+linux-headers-$(uname -r) libsqlite3-dev libssl-dev \
+libedit-dev uuid-dev libjansson-dev pkg-config
+```
 
--   Open-source et gratuit.
--   Hautement personnalisable.
--   Support de multiples protocoles VoIP (SIP, IAX, etc.).
--   Sécurisation via TLS et certificats SSL.
--   Intégration avec d'autres systèmes (bases de données, applications tierces).
+### 2. Téléchargement et installation
+```sh
+mkdir -p /usr/src/asterisk
+cd /usr/src/asterisk
+wget https://downloads.asterisk.org/pub/telephony/asterisk/asterisk-22-current.tar.gz
+tar -xvzf asterisk-22-current.tar.gz
+cd asterisk-22.2.0/
+```
 
-### Inconvénients
+### 3. Compilation et installation
+```sh
+sudo ./configure --with-jansson-bundled
+sudo make menuselect
+sudo make -j$(nproc)
+sudo make install
+sudo make samples
+sudo make config
+```
 
--   Configuration complexe.
--   Nécessite des compétences en administration système et réseau.
--   Peut être gourmand en ressources pour les grandes infrastructures.
+### 4. Démarrage d'Asterisk
+```sh
+sudo systemctl enable asterisk
+sudo systemctl start asterisk
+sudo asterisk -rvvvvv
+```
 
-## Solutions existantes sur le marché
+---
 
-### Solutions open-source
+## 👥 Configuration des utilisateurs
 
--   **Asterisk** : La solution la plus populaire pour les serveurs VoIP.
--   **FreeSWITCH** : Une alternative à Asterisk avec des fonctionnalités avancées.
--   **Kamailio** : Un proxy SIP performant et modulaire.
+Modifier `pjsip.conf` :
+```sh
+cd /etc/asterisk
+sudo nano pjsip.conf
+```
 
-### Solutions payantes
+Ajouter :
+```ini
+[general]
+language=fr
+allowguest=no
+auth_type=userpass
 
--   **3CX** : Solution VoIP complète avec interface graphique conviviale.
--   **Cisco Unified Communications** : Plateforme de téléphonie IP pour les grandes entreprises.
--   **Avaya IP Office** : Une solution pour les PME avec des options avancées.
+[6001]
+type=endpoint
+aors=6001
+auth=auth6001
+context=internal
+disallow=all
+allow=ulaw
 
-## Exemples d’implémentation
+[auth6001]
+type=auth
+auth_type=userpass
+username=6001
+password=supersecret
 
-### Mise en place d'un IVR (Serveur Vocal Interactif)
+[6001_aor]
+type=aor
+max_contacts=1
+```
+
+Redémarrer Asterisk :
+```sh
+sudo systemctl restart asterisk
+```
+
+---
+
+## 🔒 Sécurisation des appels par TLS
+
+### 1. Génération des certificats
+```sh
+sudo mkdir -p /etc/asterisk/keys
+cd /etc/asterisk/keys
+openssl req -x509 -newkey rsa:2048 -keyout private.key -out certificate.pem -days 365 -nodes -subj "/CN=asterisk"
+```
+
+### 2. Configuration TLS dans `pjsip.conf`
+```ini
+[transport-tls]
+type=transport
+protocol=tls
+bind=0.0.0.0:5061
+cert_file=/etc/asterisk/keys/certificate.pem
+priv_key_file=/etc/asterisk/keys/private.key
+method=tlsv1_2
+```
+
+Redémarrer Asterisk :
+```sh
+sudo systemctl restart asterisk
+```
+
+---
+
+## 🖥️ Configuration sur MicroSIP
+
+Configurer un compte SIP avec :
+- **Serveur SIP** : IP du serveur
+- **Nom d’utilisateur** : `6001`
+- **Mot de passe** : `supersecret`
+- **Transport** : `TLS`
+
+Une fois connecté, vous devriez voir un statut **"Enregistré"**.
+
+---
+
+## ✅ Test et validation
+
+1. Vérifier la connexion (`pjsip show endpoints`).
+2. Tester un appel entre utilisateurs.
+3. Vérifier l'audio et la stabilité de l'appel.
+4. Tester le redémarrage du serveur et la reconnexion.
+
+---
+
+## 🤖 Automatisation et déploiement
+
+## Mise en place d'un IVR (Serveur Vocal Interactif)
 
 Nous avons configuré un menu vocal interactif dans Asterisk permettant aux utilisateurs de sélectionner différents services :
-
-```ini
+```sh
 [ivr1]
 exten => s,1,Answer()
 exten => s,2,Set(TIMEOUT(response)=10)
@@ -68,14 +159,19 @@ exten =>3,1,Dial(PJSIP/malcom,10)
 exten => [04-9#],1,agi(googletts.agi,"Entrée invalide",fr,any)
 exten => _[04-9#],2,Goto(ivr_1,s,1)
 exten => t,1,Goto(ivr_1,s,3)
-
 ```
 
-### Automatisation des appels
+En appelant le numéro `900`, cela va appeler l'IVR.
 
-Nous avons mis en place un script Bash permettant de générer automatiquement des appels à partir d’un fichier CSV contenant une liste de contacts.
+## Script qui appel aléatoire les utilisateurs 
 
-```bash
+Créer un script `script.sh` pour automatiser les appels :
+```sh
+nano script.sh
+```
+
+Coller ce contenu :
+```sh
 #!/bin/bash
 
 CSV_FILE="contacts.csv"
@@ -126,20 +222,27 @@ chmod 777 "$CALL_FILE"
 mv "$CALL_FILE" "$CALLS_DIR/"
 
 echo "✅ Appel généré pour $NAME ($NUMBER)"
-
 ```
 
-Dans Asterisk, nous avons configuré un contexte permettant de diffuser un message préenregistré aux contacts appelés :
+Dans `/etc/asterisk/extensions.conf`
 
-```ini
+```sh
 [auto_calls]
 exten => s,1,Answer()
 same => n,Wait(1)
 same => n,AGI(googletts.agi,"Bonjour, ceci est un appel automatique. Nous vous présentons l'école de la plateforme, un établissement innovant où vous pouvez développer vos compétences et acquérir de nouvelles",fr)
 same => n,Hangup()
+```
+Quand ça va appeler les utilisateurs, cela va dire lire ce message en question.
 
+Donner les permissions et exécuter :
+```sh
+chmod +x script.sh
+./script.sh
 ```
 
-## Conclusion
+---
 
-Asterisk est une solution puissante et flexible pour mettre en place un serveur VoIP. Grâce à son architecture modulaire, il permet de répondre à divers besoins, tels que l'automatisation des appels et la mise en place d’un serveur vocal interactif. Bien que sa configuration soit technique, il offre une alternative robuste aux solutions payantes. En mettant en place un système IVR et un automate d'appel, nous avons démontré son potentiel dans un environnement professionnel.
+## 📝 Conclusion
+
+Ce guide vous a permis d'installer et de sécuriser un serveur VoIP avec Asterisk. Vous pouvez maintenant tester et optimiser votre infrastructure.
